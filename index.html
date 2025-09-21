@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Vue 電卓</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; margin-top: 50px; }
+    #app { width: 240px; }
+    .display {
+      background: #222; color: #0f0; font-size: 24px;
+      text-align: right; padding: 10px; margin-bottom: 10px; border-radius: 5px;
+    }
+    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    button {
+      padding: 15px; font-size: 18px;
+      border: none; border-radius: 5px; cursor: pointer;
+      background: #eee;
+    }
+    button.operator { background: #f8b400; color: white; }
+    button.equal { grid-column: span 2; background: #28a745; color: white; }
+    button.clear { background: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="display">{{ current || "0" }}</div>
+    <div class="buttons">
+      <button @click="clear" class="clear">C</button>
+      <button @click="append('.')">.</button>
+      <button @click="sign">±</button>
+      <button @click="percent">%</button>
+
+      <button @click="append('7')">7</button>
+      <button @click="append('8')">8</button>
+      <button @click="append('9')">9</button>
+      <button @click="setOperator('/') " class="operator">÷</button>
+
+      <button @click="append('4')">4</button>
+      <button @click="append('5')">5</button>
+      <button @click="append('6')">6</button>
+      <button @click="setOperator('*')" class="operator">×</button>
+
+      <button @click="append('1')">1</button>
+      <button @click="append('2')">2</button>
+      <button @click="append('3')">3</button>
+      <button @click="setOperator('-')" class="operator">−</button>
+
+      <button @click="append('0')" style="grid-column: span 2;">0</button>
+      <button @click="calculate" class="equal">=</button>
+      <button @click="setOperator('+')" class="operator">＋</button>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          current: "",
+          operator: null,
+          previous: null
+        };
+      },
+      methods: {
+        clear() {
+          this.current = "";
+          this.previous = null;
+          this.operator = null;
+        },
+        append(num) {
+          if (num === '.' && this.current.includes('.')) return;
+          this.current = this.current.toString() + num.toString();
+        },
+        sign() {
+          if (this.current) {
+            this.current = this.current.startsWith('-')
+              ? this.current.slice(1)
+              : '-' + this.current;
+          }
+        },
+        percent() {
+          this.current = (parseFloat(this.current) / 100).toString();
+        },
+        setOperator(op) {
+          if (this.current === "") return;
+          this.previous = this.current;
+          this.current = "";
+          this.operator = op;
+        },
+        calculate() {
+          if (this.previous === null || this.current === "" || !this.operator) return;
+          const prev = parseFloat(this.previous);
+          const curr = parseFloat(this.current);
+          let result = 0;
+          switch (this.operator) {
+            case '+': result = prev + curr; break;
+            case '-': result = prev - curr; break;
+            case '*': result = prev * curr; break;
+            case '/': result = curr !== 0 ? prev / curr : "エラー"; break;
+          }
+          this.current = result.toString();
+          this.previous = null;
+          this.operator = null;
+        }
+      }
+    }).mount("#app");
+  </script>
+</body>
+</html>
